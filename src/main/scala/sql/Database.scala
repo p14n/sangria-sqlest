@@ -19,37 +19,4 @@ trait DatabaseExample {
   // This database is used in all execute calls
   implicit val database = Database.withDataSource(dataSource, statementBuilder)
 
-  /*executeRawSql("drop table fruit")
-  executeRawSql("""
-    create table fruit (
-      id int not null,
-      name varchar not null,
-      juiciness int not null
-    )
-  """)
-
-  executeRawSql("drop table smoothy")
-  executeRawSql("""
-    create table smoothy (
-      id int not null,
-      description varchar not null
-    )
-  """)
-
-  executeRawSql("drop table ingredients")
-  executeRawSql("""
-    create table ingredients (
-      smoothy_id int not null,
-      fruit_id int not null
-    )
-  """)
-
-  def executeRawSql(sql: String) =
-    database.executeWithConnection { connection =>
-      try {
-        connection.createStatement.execute(sql)
-      } catch {
-        case e: Exception => // Ignore exception from dropping tables
-      }
-    }*/
 }
