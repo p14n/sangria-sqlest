@@ -61,6 +61,13 @@ git push origin update-snapshot:develop
 git checkout develop
 git branch -D update-snapshot
 
+git checkout -b release-1.1
+e version.sbt
+git add version.sbt
+git commit -m "Bump version"
+git tag 1.1
+git push origin --tags
+
 
 */
   def updateSnapshotVersionAction: (State) => State = { state: State =>
@@ -71,11 +78,10 @@ git branch -D update-snapshot
     val st = extractVersions(state)
     val vs = st.get(versions)
     val newState = if(vs.isDefined){
-    	//writeVersion(st,globalVersionString format vs.get._2)
     	val afterWrite = commitNextVersion(setNextVersion(st))
 	    git.cmd("push","origin","update-snapshot:develop") ! afterWrite.log
 	    git.cmd("checkout","develop") ! afterWrite.log
-//    	git.cmd("branch","-D","update-snapshot") ! afterWrite.log
+    	git.cmd("branch","-D","update-snapshot") ! afterWrite.log
     	afterWrite
     } else {
 	    git.cmd("checkout","develop") ! st.log
@@ -84,11 +90,6 @@ git branch -D update-snapshot
     	st
     }
     newState
-  }
-
-  def writeVersion(st: State, versionString: String) {
-    val file = st.extract.get(releaseVersionFile)
-    IO.writeLines(file, Seq(versionString))
   }
 
   def merge: (State) => State = { st: State =>
@@ -104,6 +105,9 @@ val updateSnapshotVersion = ReleaseStep(updateSnapshotVersionAction)
  releaseProcess := Seq[ReleaseStep](
 //  checkSnapshotDependencies,
   updateSnapshotVersion
+  setReleaseVersion,                      // : ReleaseStep
+  commitReleaseVersion,                   // : ReleaseStep, performs the initial git checks
+  tagRelease                             // : ReleaseStep
 //  extractVersions
 //  mergeReleaseVersion
 //  setNextVersion
