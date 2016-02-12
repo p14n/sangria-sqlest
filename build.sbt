@@ -15,6 +15,18 @@ libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria-play-json" % "0.1.0"
 )
 
+credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.jhc.co.uk", "dev", "jhcjhc")
+
+publishTo := {
+	val nexus = "http://nexus.jhc.co.uk/nexus/"
+
+    if (isSnapshot.value) {
+        Some(Resolver.url("snapshots", new URL(nexus + "content/repositories/snapshots")))
+    } else {
+        Some(Resolver.url("releases", new URL(nexus + "content/repositories/releases")))
+    }
+}
+
 
 import ReleaseTransformations._
 import ReleasePlugin.autoImport._
