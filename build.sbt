@@ -79,8 +79,8 @@ git branch -D update-snapshot
     	//git.cmd("branch","-D","update-snapshot")
     	afterWrite
     } else {
-	    git.cmd("checkout","develop")
-    	git.cmd("branch","-D","update-snapshot")
+	    git.cmd("checkout","develop") ! st.log
+    	git.cmd("branch","-D","update-snapshot") ! st.log
     	sys.error(s"No versions are set! Could not determine from HEAD - see previous log entries")
     	st
     }
