@@ -104,7 +104,7 @@ val updateSnapshotVersion = ReleaseStep(updateSnapshotVersionAction)
 
  releaseProcess := Seq[ReleaseStep](
 //  checkSnapshotDependencies,
-  updateSnapshotVersion
+  updateSnapshotVersion,
   setReleaseVersion,                      // : ReleaseStep
   commitReleaseVersion,                   // : ReleaseStep, performs the initial git checks
   tagRelease                             // : ReleaseStep
