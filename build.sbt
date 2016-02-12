@@ -71,7 +71,7 @@ git branch -D update-snapshot
     val st = extractVersions(state)
     val vs = st.get(versions)
     val newState = if(vs.isDefined){
-    	//writeVersion(st,vs.get._2)
+    	writeVersion(st,globalVersionString format vs.get._2)
     	val afterWrite = commitNextVersion(st)
 	    git.cmd("push","origin","update-snapshot:develop")
 	    git.cmd("checkout","develop")
