@@ -65,13 +65,13 @@ git branch -D update-snapshot
 */
   def updateSnapshotVersionAction: (State) => State = { state: State =>
     val git = state.extract.get(releaseVcs).get.asInstanceOf[Git]
-    git.cmd("checkout","-b","update-snapshot")
+    git.cmd("checkout","-b","update-snapshot") ! state.log
     state.log.info(s"####### Checked out local branch")
-    git.cmd("pull","origin","develop")
+    git.cmd("pull","origin","develop") ! state.log
     val st = extractVersions(state)
     val vs = st.get(versions)
     val newState = if(vs.isDefined){
-    	writeVersion(st,vs.get._2)
+    	//writeVersion(st,vs.get._2)
     	val afterWrite = commitNextVersion(st)
 	    git.cmd("push","origin","update-snapshot:develop")
 	    git.cmd("checkout","develop")
