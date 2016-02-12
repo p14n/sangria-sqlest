@@ -38,8 +38,8 @@ libraryDependencies ++= Seq(
 			  st.log.info(s"####### Release version: $relVersion, next version: $nextVersion")
 			  Some( (relVersion,nextVersion) )
     	    } else {
-    	    	sys.error("Non-snapshot version found in "+line)
-    	    	None
+			  st.log.error("####### Non-snapshot version found in "+line)
+   	    	  None
     	    }
     	  }
     	} else None
@@ -51,6 +51,46 @@ libraryDependencies ++= Seq(
     	st.put(versions,extracted(0))
   }
 
+/*
+git checkout -b update-snapshot
+git pull origin develop
+e version.sbt
+git add version.sbt
+git commit -m "Bump version"
+git push origin update-snapshot:develop
+git checkout develop
+git branch -D update-snapshot
+
+
+*/
+  def updateSnapshotVersionAction: (State) => State = { state: State =>
+    val git = state.extract.get(releaseVcs).get.asInstanceOf[Git]
+    git.cmd("checkout","-b","update-snapshot")
+    state.log.info(s"####### Checked out local branch")
+    git.cmd("pull","origin","develop")
+    val st = extractVersions(state)
+    val vs = st.get(versions)
+    val newState = if(vs.isDefined){
+    	writeVersion(st,vs.get._2)
+    	val afterWrite = commitNextVersion(st)
+	    git.cmd("push","origin","update-snapshot:develop")
+	    git.cmd("checkout","develop")
+    	//git.cmd("branch","-D","update-snapshot")
+    	afterWrite
+    } else {
+	    git.cmd("checkout","develop")
+    	git.cmd("branch","-D","update-snapshot")
+    	sys.error(s"No versions are set! Could not determine from HEAD - see previous log entries")
+    	st
+    }
+    newState
+  }
+
+  def writeVersion(st: State, versionString: String) {
+    val file = st.extract.get(releaseVersionFile)
+    IO.writeLines(file, Seq(versionString))
+  }
+
   def merge: (State) => State = { st: State =>
     val git = st.extract.get(releaseVcs).get.asInstanceOf[Git]
     val curBranch = (git.cmd("rev-parse", "--abbrev-ref", "HEAD") !!).trim
@@ -58,21 +98,14 @@ libraryDependencies ++= Seq(
     val vs = st.get(versions).getOrElse(sys.error(s"No versions are set! Was this release part executed before Monkey death?"))
     st
   }
-  lazy val mergeReleaseVersionAction = { st: State =>
-    val newState = merge(st)
-    newState
-  }
-  lazy val determineNewVersions = { st: State =>
-    val newState = extractVersions(st)
-    newState
-  }
 
-val mergeReleaseVersion = ReleaseStep(mergeReleaseVersionAction)
+val updateSnapshotVersion = ReleaseStep(updateSnapshotVersionAction)
 
  releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  extractVersions,
-  mergeReleaseVersion
+//  checkSnapshotDependencies,
+  updateSnapshotVersion
+//  extractVersions
+//  mergeReleaseVersion
 //  setNextVersion
 /*  inquireVersions,                        // : ReleaseStep
   runTest,                                // : ReleaseStep
